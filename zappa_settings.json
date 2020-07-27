@@ -1,0 +1,18 @@
+{
+    "dev": {
+        "apigateway_enabled": false,
+        "lambda_handler": "followers.lambda_handler",
+        "aws_region": "eu-west-2",
+        "profile_name": "Martin Eaton",
+        "project_name": "page-followers",
+        "runtime": "python3.6",
+        "s3_bucket": "zappa-tomorrowwig-followers",
+        "events": [
+            {
+                "function": "followers.lambda_handler",
+                "expression": "cron(10 1,7,13,19, * * ? *)"
+            }
+        ],
+        "keep_warm": false
+    }
+}
