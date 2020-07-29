@@ -1,7 +1,6 @@
 {
     "dev": {
         "apigateway_enabled": false,
-        "lambda_handler": "followers.lambda_handler",
         "aws_region": "eu-west-2",
         "profile_name": "Martin Eaton",
         "project_name": "page-followers",
@@ -9,8 +8,12 @@
         "s3_bucket": "zappa-tomorrowwig-followers",
         "events": [
             {
-                "function": "followers.lambda_handler",
+                "function": "tomorrowswig_followers.followers.lambda_handler",
                 "expression": "cron(10 1,7,13,19, * * ? *)"
+            },
+            {
+                "function": "tomorrowswig_followers.ads.create_insights",
+                "expression": "cron(10 13, * * ? *)"
             }
         ],
         "keep_warm": false
