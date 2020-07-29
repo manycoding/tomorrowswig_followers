@@ -86,7 +86,7 @@ def get_insights_df(insights: List) -> Tuple[pd.DataFrame, str]:
     index = df["ad_name"].apply(lambda x: pycountry.countries.search_fuzzy(x.split("-")[1].strip())[0].alpha_2)
     index.name = "countries"
     df.set_index(index, inplace=True)
-    df.sort_index(inplace=True)
+    df.sort_values("ad_name", inplace=True)
 
     date = datetime.strptime(df["date_start"].values[0], "%Y-%m-%d")
     worksheet_name = date.strftime("%b %d %Y")
@@ -123,5 +123,5 @@ def get_insights_df(insights: List) -> Tuple[pd.DataFrame, str]:
 def create_insights(event: Dict = None, context=None,) -> str:
     insights = get_insights()
     df, worksheet_name = get_insights_df(insights)
-    write_df(df, f"test {worksheet_name}")
+    write_df(df, f"{worksheet_name}")
     return "Success"
