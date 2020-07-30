@@ -33,7 +33,7 @@ def get_worksheet(name: str) -> Worksheet:
     if name in worksheets:
         return SH.worksheet(name)
     else:
-        return SH.add_worksheet(name, 0, 0, 4)
+        return SH.add_worksheet(name, 1, 1, 4)
 
 # Cell
 def write_df(df: pd.DataFrame, worksheet: str):
