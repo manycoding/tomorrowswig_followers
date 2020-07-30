@@ -34,7 +34,7 @@ def get_updated_followers(
     df: pd.DataFrame, data: Dict[str, int], end_time: str
 ) -> pd.DataFrame:
     new_followers = pd.Series(data)
-    end_time = datetime.strptime(end_time, "%Y-%m-%d").strftime(f"%b %d{' '*16}")
+    end_time = datetime.strptime(end_time, "%Y-%m-%d").strftime(f"%b %d %Y{' '*16}")
     new_followers.name = f"{end_time} {str(datetime.utcnow()).split('.')[0]}"
     if new_followers.name not in df.columns:
         df = pd.concat([df, new_followers], axis=1)

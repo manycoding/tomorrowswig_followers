@@ -24,6 +24,9 @@ index = {"APP_ID": "00_core.ipynb",
          "get_insights": "02_ads.ipynb",
          "get_action": "02_ads.ipynb",
          "get_followers_change": "02_ads.ipynb",
+         "match_country": "02_ads.ipynb",
+         "add_total": "02_ads.ipynb",
+         "add_followers": "02_ads.ipynb",
          "get_insights_df": "02_ads.ipynb",
          "create_insights": "02_ads.ipynb"}
 
