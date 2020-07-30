@@ -24,7 +24,7 @@ SH = gspread.service_account(filename="creds.json").open(SHEET)
 # Cell
 def get_df(worksheet: str) -> pd.DataFrame:
     wsh = SH.worksheet(worksheet)
-    df = pd.DataFrame(wsh.get_all_records())
+    df = pd.DataFrame(wsh.get_all_records()).replace("", 0)
     if "countries" in df:
         df.set_index(df["countries"], inplace=True)
     return df.drop(columns="countries")
@@ -48,6 +48,6 @@ def write_df(df: pd.DataFrame, worksheet: str):
 def write_series(series: pd.Series, worksheet: str, loc: str = "A1"):
     worksheet = get_worksheet(worksheet)
     df = pd.DataFrame(series, columns=[""])
-    df.insert(0, "", df.index)
+    df.insert(0, "name", df.index)
     df.replace([0, np.inf, np.nan], "", inplace=True)
     worksheet.update(loc, [df.columns.to_list()] + df.values.tolist(), raw=False)
