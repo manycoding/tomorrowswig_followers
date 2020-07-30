@@ -4,6 +4,7 @@ __all__ = ['get_followers', 'get_updated_followers', 'save_followers', 'save_cha
 
 # Cell
 from datetime import datetime
+from typing import *
 
 from pyfacebook import IgProApi
 from pyfacebook.error import *
