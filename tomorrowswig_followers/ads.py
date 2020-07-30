@@ -54,14 +54,12 @@ get_insights = partial(account.get_insights, fields=[
         "video_p50_watched_actions",
         "video_p75_watched_actions",
         "video_p95_watched_actions",
-
     ], params={
         'level': "ad",
         'date_preset': "yesterday",
     })
 
 # Cell
-
 def get_action(cell, name):
     action = [a for a in cell if a["action_type"] == name]
     if action:
@@ -72,9 +70,9 @@ def get_action(cell, name):
 def get_followers_change(date: datetime) -> pd.DataFrame:
     history_df = get_df("History")
     new_followers = get_dif(history_df)
-    followers_date = (date - timedelta(days=1)).strftime("%b %d")
+    followers_date = (date + timedelta(days=1)).strftime("%b %d")
     new_followers = new_followers.iloc[:,new_followers.columns.str.startswith(followers_date)].replace(0, np.nan)
-    return new_followers.dropna(axis=1, how="all").dropna().astype(int)
+    return new_followers.dropna(axis=1, how="all").iloc[:, :1].dropna().astype(int)
 
 # Cell
 def get_insights_df(insights: List) -> Tuple[pd.DataFrame, str]:
@@ -116,7 +114,6 @@ def get_insights_df(insights: List) -> Tuple[pd.DataFrame, str]:
                    "ctr": "CTR (All)", "cpm": "CPM (Cost per 1,000 Impressions)",
                    "reach": "Reach", "impressions": "Impressions", "spend": "Amount Spent (USD)"}, inplace=True)
     return df[COLUMNS].replace(0, ""), worksheet_name
-
 
 # Cell
 
