@@ -3,9 +3,11 @@
 __all__ = ['get_followers', 'get_updated_followers', 'save_followers', 'save_change', 'make_change', 'lambda_handler']
 
 # Cell
+import os
 from datetime import datetime
 from typing import *
 
+import pandas as pd
 from pyfacebook import IgProApi
 from pyfacebook.error import *
 from .core import *
