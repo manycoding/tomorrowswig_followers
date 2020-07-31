@@ -8,12 +8,12 @@
         "s3_bucket": "zappa-tomorrowwig-followers",
         "events": [
             {
-                "function": "tomorrowswig_followers.followers.lambda_handler",
+                "function": "tomorrowswig_followers.followers.update",
                 "expression": "cron(10 1,7,13,19, * * ? *)"
             },
             {
                 "function": "tomorrowswig_followers.ads.create_insights",
-                "expression": "cron(10 13, * * ? *)"
+                "expression": "cron(10 1, * * ? *)"
             }
         ],
         "keep_warm": false
