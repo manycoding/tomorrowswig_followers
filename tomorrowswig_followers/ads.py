@@ -185,4 +185,4 @@ def create_insights(event: Dict = None, context=None,) -> str:
     df = df.append([empty, empty, empty])
     write_df(df, f"{worksheet_name}")
     write_series(add_stats, f"{worksheet_name}", loc=f"A{len(df)}")
-    return "Success"
+    return f"Created insights in '{worksheet_name}'"
