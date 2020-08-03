@@ -13,7 +13,7 @@
             },
             {
                 "function": "tomorrowswig_followers.ads.create_insights",
-                "expression": "cron(10 1, * * ? *)"
+                "expression": "cron(20 1, * * ? *)"
             }
         ],
         "keep_warm": false
