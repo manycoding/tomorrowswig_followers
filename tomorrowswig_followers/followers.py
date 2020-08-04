@@ -76,8 +76,10 @@ def save_change():
 def make_change(df: pd.DataFrame) -> pd.DataFrame:
     change_df = df.diff(axis=1, periods=-1)
     change_df = change_df.fillna(0).astype(int)
+    zeros_mask  = (change_df != 0).any(axis=0)
+    change_df = change_df.loc[:, zeros_mask]
     change_df = change_df.applymap(lambda x: f"+{x}" if x > 0 else x)
-    change_df = "(" + change_df.astype(str) + ")" + " " + df.astype(str)
+    change_df = "(" + change_df.astype(str) + ")" + " " + df.loc[:, zeros_mask].astype(str)
     return change_df.replace(["\(0\) 0", "\(0\) "], "", regex=True)
 
 # Cell
