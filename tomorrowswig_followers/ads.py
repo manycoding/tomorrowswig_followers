@@ -166,17 +166,17 @@ def more_stats(df: pd.DataFrame, date: datetime) -> pd.Series:
     stats = pd.Series(dtype=float)
     ads_followers_gain = df.loc["total", "New Followers"]
     spent = df.loc["total", "Amount Spent (USD)"]
-    stats["Conversion Rate"] = ads_followers_gain / df.loc["total", "Clicks (All)"]
-    stats["Cost of Follower Increase"] = spent / ads_followers_gain
+    stats["Ads Conversion Rate"] = ads_followers_gain / df.loc["total", "Clicks (All)"]
+    stats["Ads Follower Increase Cost"] = spent / ads_followers_gain
     stats["New Followers"] = get_new_followers()[1]
     stats["Random Followers"] = stats["New Followers"] - ads_followers_gain
-    stats["Cost of New Follower"] = spent / stats["New Followers"]
+    stats["New Follower Cost"] = spent / stats["New Followers"]
 
     followers_gain = get_followers_change(date).sum().item()
     stats["Unfollowers"] = stats["New Followers"] - followers_gain
-    stats["Unconversion Rate"] = stats["New Followers"] / df.loc["total", "Clicks (All)"]
-    stats["Ads Followers Increase"] = ads_followers_gain + stats["Random Followers"] - stats["Unfollowers"]
-    stats["Real Followers Increase Cost"] = spent / stats["Ads Followers Increase"]
+    # stats["Conversion Rate"] = stats["New Followers"] / df.loc["total", "Clicks (All)"]
+    stats["Real Ads Followers Increase"] = ads_followers_gain + stats["Random Followers"] - stats["Unfollowers"]
+    stats["Real Followers Increase Cost"] = spent / stats["Real Ads Followers Increase"]
     return stats
 
 # Cell
