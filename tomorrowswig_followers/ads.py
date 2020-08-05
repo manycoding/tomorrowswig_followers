@@ -34,8 +34,7 @@ def get_dif(df: pd.DataFrame) -> pd.DataFrame:
     return change_df
 
 # Cell
-# "Relevance Score",
-COLUMNS = ["Ad Name", "New Followers", "% (Clicks)", "% (Impressions)", "Cost Per Follow",
+COLUMNS = ["Ad Name", "Ads Followers Increase", "% (Clicks)", "% (Impressions)", "Cost Per Follow",
            "Clicks (All)", "Link Clicks", "CPC (All)" , "CPC (Cost per Link Click)",
            "CTR (All)", "CPM (Cost per 1,000 Impressions)", "Amount Spent (USD)", "Impressions", "Reach", "Post Reactions", "Post Shares",
            "Video Average Play Time", "Video Plays at 50%", "Video Plays at 75%", "Video Plays at 95%"]
@@ -66,7 +65,7 @@ get_insights = partial(account.get_insights, fields=[
 def get_action(cell, name):
     action = [a for a in cell if a["action_type"] == name]
     if action:
-        return action[0]["value"]
+        return float(action[0]["value"])
     return 0
 
 # Cell
@@ -98,11 +97,11 @@ def add_country_total(df: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
 # Cell
 def add_followers(df: pd.DataFrame, date: datetime):
     new_followers = get_followers_change(date)
-    df["New Followers"] = new_followers
+    df["Ads Followers Increase"] = new_followers
     df.fillna(0, inplace=True)
-    df["% (Clicks)"] = (df["New Followers"] / df["clicks"]* 100).round().astype(int)
-    df["% (Impressions)"] = (df["New Followers"] / df["impressions"] * 100)
-    df["Cost Per Follow"] = (df["spend"] / df["New Followers"])
+    df["% (Clicks)"] = (df["Ads Followers Increase"] / df["clicks"]* 100).astype(int)
+    df["% (Impressions)"] = (df["Ads Followers Increase"] / df["impressions"] * 100)
+    df["Cost Per Follow"] = (df["spend"] / df["Ads Followers Increase"])
     df.replace([np.inf], 0, inplace=True)
 
 # Cell
@@ -121,14 +120,14 @@ def add_total(df: pd.DataFrame) -> pd.DataFrame:
     to_sum = set(df.columns).difference(set(to_mean + ["ad_name"]))
     total = pd.Series(name="total", index=df.columns, dtype=float)
     total[to_mean] = df[to_mean].apply(np.mean)
-    total[to_sum] = df[to_sum].astype(int).apply(sum)
+    total[to_sum] = df[to_sum].apply(sum)
     return df.append(total)
 
 # Cell
 def get_insights_df(insights: List) -> Tuple[pd.DataFrame, datetime]:
     df = pd.DataFrame(insights)
     floats = ["cpc", "cpm", "ctr", "spend"]
-    df[floats] = df[floats].astype(float).round(2)
+    df[floats] = df[floats].astype(float)
     ints = ["clicks", "impressions", "reach"]
     df[ints] = df[ints].astype(int)
 
@@ -140,7 +139,7 @@ def get_insights_df(insights: List) -> Tuple[pd.DataFrame, datetime]:
     df["Post Reactions"] = df["actions"].apply(partial(get_action, name="post_reaction"))
     df["Post Shares"] = df["actions"].apply(partial(get_action, name="post"))
     df["Link Clicks"] = df["actions"].apply(partial(get_action, name="link_click"))
-    df["CPC (Cost per Link Click)"] = df["cost_per_action_type"].apply(partial(get_action, name="link_click")).astype(float)
+    df["CPC (Cost per Link Click)"] = df["cost_per_action_type"].apply(partial(get_action, name="link_click"))
     get_video_action = partial(get_action, name="video_view")
     df["Video Average Play Time"] = df["video_avg_time_watched_actions"].apply(get_video_action)
     df["Video Plays at 50%"] = df["video_p50_watched_actions"].apply(get_video_action)
@@ -154,40 +153,59 @@ def get_insights_df(insights: List) -> Tuple[pd.DataFrame, datetime]:
     dupes = add_country_total(df)
     add_followers(df, date)
     df = add_total(df)
-    to_round = ["Cost Per Follow", "% (Impressions)", "CPC (Cost per Link Click)"]
-    df[to_round] = df[to_round].round(2)
     df.rename(columns={"ad_name": "Ad Name", "clicks": "Clicks (All)", "cpc": "CPC (All)",
-                   "ctr": "CTR (All)", "cpm": "CPM (Cost per 1,000 Impressions)",
-                   "reach": "Reach", "impressions": "Impressions", "spend": "Amount Spent (USD)"}, inplace=True)
-    return df[COLUMNS], date
+                       "ctr": "CTR (All)", "cpm": "CPM (Cost per 1,000 Impressions)",
+                       "reach": "Reach", "impressions": "Impressions", "spend": "Amount Spent (USD)"}, inplace=True)
+    return df[COLUMNS].round(2), date
 
 # Cell
-def more_stats(df: pd.DataFrame, date: datetime) -> pd.Series:
-    stats = pd.Series(dtype=float)
-    ads_followers_gain = df.loc["total", "New Followers"]
+def more_stats(df: pd.DataFrame, date: datetime) -> pd.DataFrame:
+    stats = pd.Series(dtype=float, name="followers")
+    ads_followers_gain = df.loc["total", "Ads Followers Increase"]
+    followers_gain = get_followers_change(date).sum().item()
     spent = df.loc["total", "Amount Spent (USD)"]
-    stats["Ads Conversion Rate"] = ads_followers_gain / df.loc["total", "Clicks (All)"]
-    stats["Ads Follower Increase Cost"] = spent / ads_followers_gain
+    stats["Ads Followers Increase"] = ads_followers_gain
     stats["New Followers"] = get_new_followers()[1]
     stats["Random Followers"] = stats["New Followers"] - ads_followers_gain
-    stats["New Follower Cost"] = spent / stats["New Followers"]
-
-    followers_gain = get_followers_change(date).sum().item()
     stats["Unfollowers"] = stats["New Followers"] - followers_gain
-    # stats["Conversion Rate"] = stats["New Followers"] / df.loc["total", "Clicks (All)"]
     stats["Real Ads Followers Increase"] = ads_followers_gain + stats["Random Followers"] - stats["Unfollowers"]
-    stats["Real Followers Increase Cost"] = spent / stats["Real Ads Followers Increase"]
-    return stats
+
+    stats_df = pd.DataFrame(stats)
+    stats_df.index.name = "  "
+    # stats_df.insert(0, "  ", stats_df.index)
+    stats_df["Conversion Rate"] = stats_df["followers"] / df.loc["total", "Clicks (All)"]
+    stats_df[" "] = 0
+    stats_df["Cost Per Follower/Increase"] = spent/ stats_df["followers"]
+    stats_df.iloc[2:5, 1] = 0
+    stats_df.iloc[2:4, 3] = 0
+    return stats_df.round(2)
 
 # Cell
-
 def create_insights(event: Dict = None, context=None,) -> str:
     insights = get_insights()
     df, date = get_insights_df(insights)
     worksheet_name = date.strftime("%b %d %Y")
-    add_stats = more_stats(df, date)
+    stats_df = more_stats(df, date)
     empty = pd.Series(name="", dtype=str)
     df = df.append([empty, empty, empty])
-    write_df(df, f"{worksheet_name}")
-    write_series(add_stats, f"{worksheet_name}", loc=f"A{len(df)}")
+    write_df(df, worksheet_name)
+    write_df(stats_df, worksheet_name, loc=f"B{len(df)}")
+
+    wsh = get_worksheet(worksheet_name)
+    wsh.format(f"C1:G{len(df)-1}", {"textFormat": {
+        "foregroundColor": {
+            "red": 0.45,
+            "green": 0.0,
+            "blue": 0.0
+        }}},)
+    wsh.format(f"D:E", {"numberFormat": {"type": "PERCENT"}},)
+    wsh.format(f"F", {"numberFormat": {"type": "CURRENCY"}},)
+
+    unf_cell = wsh.find("Unfollowers")
+    wsh.format(f"C{wsh.find('Unfollowers').row}", {"textFormat": {
+        "foregroundColor": {
+            "red": 0.0,
+            "green": 0.0,
+            "blue": 1.0
+        }}},)
     return f"Created insights in '{worksheet_name}'"
