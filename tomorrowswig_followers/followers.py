@@ -52,7 +52,8 @@ def get_updated_followers(
     new_followers = pd.Series(data)
     end_time = datetime.strptime(end_time, "%Y-%m-%d").strftime(f"%b %d %Y{' '*16}")
     new_followers.name = f"{end_time} {str(datetime.utcnow()).split('.')[0]}"
-    if new_followers.name not in df.columns:
+    last_entry = df.iloc[:, 0]
+    if not np.array_equal(last_entry[last_entry != 0].values, new_followers.sort_index().values):
         df = pd.concat([df, new_followers], axis=1)
         df = df[[df.columns[-1]] + df.columns[:-1].tolist()]
         df.index.name = "countries"
