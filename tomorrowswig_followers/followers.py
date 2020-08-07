@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import *
 
 import pandas as pd
+import numpy as np
 from pyfacebook import IgProApi
 from pyfacebook.error import *
 from .core import *
