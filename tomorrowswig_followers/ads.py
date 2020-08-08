@@ -99,7 +99,7 @@ def add_followers(df: pd.DataFrame, date: datetime):
     new_followers = get_followers_change(date)
     df["Ads Followers Increase"] = new_followers
     df.fillna(0, inplace=True)
-    df["% (Clicks)"] = (df["Ads Followers Increase"] / df["clicks"]).astype(int)
+    df["% (Clicks)"] = (df["Ads Followers Increase"] / df["clicks"])
     df["% (Impressions)"] = (df["Ads Followers Increase"] / df["impressions"])
     df["Cost Per Follow"] = (df["spend"] / df["Ads Followers Increase"])
     df.replace([np.inf], 0, inplace=True)
@@ -156,7 +156,9 @@ def get_insights_df(insights: List) -> Tuple[pd.DataFrame, datetime]:
     df.rename(columns={"ad_name": "Ad Name", "clicks": "Clicks (All)", "cpc": "CPC (All)",
                        "ctr": "CTR (All)", "cpm": "CPM (Cost per 1,000 Impressions)",
                        "reach": "Reach", "impressions": "Impressions", "spend": "Amount Spent (USD)"}, inplace=True)
-    return df[COLUMNS].round(2), date
+    df["% (Impressions)"] = df["% (Impressions)"].round(4)
+    df[df.columns.difference(["% (Impressions)"])] = df[df.columns.difference(["% (Impressions)"])].round(2)
+    return df[COLUMNS], date
 
 # Cell
 def more_stats(df: pd.DataFrame, date: datetime) -> pd.DataFrame:
@@ -172,7 +174,6 @@ def more_stats(df: pd.DataFrame, date: datetime) -> pd.DataFrame:
 
     stats_df = pd.DataFrame(stats)
     stats_df.index.name = "  "
-    # stats_df.insert(0, "  ", stats_df.index)
     stats_df["Conversion Rate"] = stats_df["Followers"] / df.loc["total", "Clicks (All)"]
     stats_df[" "] = 0
     stats_df["Cost Per Follower/Increase"] = spent/ stats_df["Followers"]
