@@ -9,7 +9,7 @@
         "events": [
             {
                 "function": "tomorrowswig_followers.followers.update",
-                "expression": "cron(10 0,2,8,14,17,18,19,20,21,22,23 * * ? *)"
+                "expression": "rate(10 minutes)"
             },
             {
                 "function": "tomorrowswig_followers.ads.create_insights",
