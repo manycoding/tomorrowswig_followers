@@ -5,7 +5,7 @@ __all__ = ['get_followers', 'get_new_followers', 'get_updated_followers', 'save_
 
 # Cell
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import *
 
 import pandas as pd
@@ -51,8 +51,8 @@ def get_updated_followers(
     df: pd.DataFrame, data: Dict[str, int], end_time: str
 ) -> pd.DataFrame:
     new_followers = pd.Series(data)
-    end_time = datetime.strptime(end_time, "%Y-%m-%d").strftime(f"%b %d %Y{' '*16}")
-    new_followers.name = f"{end_time} {str(datetime.utcnow()).split('.')[0]}"
+    date = (datetime.strptime(end_time, "%Y-%m-%d") - timedelta(days=1)).strftime(f"%b %d %Y{' '*16}")
+    new_followers.name = f"{date} {str(datetime.utcnow()).split('.')[0]}"
     last_entry = df.iloc[:, 0]
     if not np.array_equal(last_entry[last_entry != 0].values, new_followers.sort_index().values):
         df = pd.concat([df, new_followers], axis=1)
@@ -88,6 +88,6 @@ def save_change():
 # Cell
 def update(event: Dict = None, context=None,):
     get_followers()
-    time = save_followers()
+    date = save_followers()
     save_change()
-    return f"Updated followers from '{time}' in 'History' and 'Change History'"
+    return f"Updated followers with '{date}' endtime in 'History' and 'Change History'"

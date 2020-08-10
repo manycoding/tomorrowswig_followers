@@ -12,7 +12,7 @@ from .followers import get_new_followers
 import os
 from typing import *
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import partial
 
 import pandas as pd
@@ -72,7 +72,7 @@ def get_action(cell, name):
 def get_followers_change(date: datetime) -> pd.DataFrame:
     history_df = get_df("History")
     new_followers = get_dif(history_df)
-    followers_date = (date + timedelta(days=1)).strftime("%b %d %Y")
+    followers_date = date.strftime("%b %d %Y")
     new_followers = new_followers.iloc[:,new_followers.columns.str.startswith(followers_date)].replace(0, np.nan)
     new_followers = new_followers.dropna(axis=1, how="all").iloc[:, :1].dropna().astype(int)
     if not new_followers.values.size:
