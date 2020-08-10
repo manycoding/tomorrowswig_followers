@@ -34,7 +34,7 @@ def get_dif(df: pd.DataFrame) -> pd.DataFrame:
     return change_df
 
 # Cell
-COLUMNS = ["Ad Name", "Ads Followers Increase", "% (Clicks)", "% (Impressions)", "Cost Per Follow",
+COLUMNS = ["Ad Name", "Ads Followers Change", "% (Clicks)", "% (Impressions)", "Cost Per Follow",
            "Clicks (All)", "Link Clicks", "CPC (All)" , "CPC (Cost per Link Click)",
            "CTR (All)", "CPM (Cost per 1,000 Impressions)", "Amount Spent (USD)", "Impressions", "Reach", "Post Reactions", "Post Shares",
            "Video Average Play Time", "Video Plays at 50%", "Video Plays at 75%", "Video Plays at 95%"]
@@ -97,11 +97,11 @@ def add_country_total(df: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
 # Cell
 def add_followers(df: pd.DataFrame, date: datetime):
     new_followers = get_followers_change(date)
-    df["Ads Followers Increase"] = new_followers
+    df["Ads Followers Change"] = new_followers
     df.fillna(0, inplace=True)
-    df["% (Clicks)"] = (df["Ads Followers Increase"] / df["clicks"])
-    df["% (Impressions)"] = (df["Ads Followers Increase"] / df["impressions"])
-    df["Cost Per Follow"] = (df["spend"] / df["Ads Followers Increase"])
+    df["% (Clicks)"] = (df["Ads Followers Change"] / df["clicks"])
+    df["% (Impressions)"] = (df["Ads Followers Change"] / df["impressions"])
+    df["Cost Per Follow"] = (df["spend"] / df["Ads Followers Change"])
     df.replace([np.inf], 0, inplace=True)
 
 # Cell
@@ -115,13 +115,14 @@ def get_countries(ids: List[str]) -> List[Dict]:
 
 # Cell
 def add_total(df: pd.DataFrame) -> pd.DataFrame:
-    to_mean = ["cpc", "cpm", "ctr", "CPC (Cost per Link Click)", "Video Average Play Time",
-                "% (Clicks)", "% (Impressions)", "Cost Per Follow"]
-    to_sum = set(df.columns).difference(set(to_mean + ["ad_name"]))
+    to_mean = ["cpc", "cpm", "ctr", "CPC (Cost per Link Click)", "Video Average Play Time"]
+    empty = ["Ads Followers Change", "% (Clicks)", "% (Impressions)", "Cost Per Follow", "ad_name"]
+    to_sum = df.columns.difference(to_mean + empty)
     total = pd.Series(name="total", index=df.columns, dtype=float)
     total[to_mean] = df[to_mean].apply(np.mean)
     total[to_sum] = df[to_sum].apply(sum)
-    return df.append(total)
+    df = df.append(total)
+    return pd.concat([df.iloc[-1:], df.iloc[:-1]])
 
 # Cell
 def get_insights_df(insights: List) -> Tuple[pd.DataFrame, datetime]:
@@ -163,22 +164,23 @@ def get_insights_df(insights: List) -> Tuple[pd.DataFrame, datetime]:
 # Cell
 def more_stats(df: pd.DataFrame, date: datetime) -> pd.DataFrame:
     stats = pd.Series(dtype=float, name="Followers")
-    ads_followers_gain = df.loc["total", "Ads Followers Increase"]
+    ads_followers_gain = df["Ads Followers Change"].sum()
     followers_gain = get_followers_change(date).sum().item()
     spent = df.loc["total", "Amount Spent (USD)"]
-    stats["Ads Followers Increase"] = ads_followers_gain
-    stats["New Followers"] = get_new_followers()[1]
-    stats["Random Followers"] = stats["New Followers"] - ads_followers_gain
+    stats["Ads Followers Change"] = ads_followers_gain
+    new_followers = get_new_followers()[1]
+    stats["Random Followers"] = new_followers - ads_followers_gain
+    stats["New Followers"] = new_followers
     stats["Unfollowers"] = stats["New Followers"] - followers_gain
-    stats["Real Ads Followers Increase"] = ads_followers_gain + stats["Random Followers"] - stats["Unfollowers"]
+    stats["Followers Change"] = ads_followers_gain + stats["Random Followers"] - stats["Unfollowers"]
 
     stats_df = pd.DataFrame(stats)
     stats_df.index.name = "  "
     stats_df["Conversion Rate"] = stats_df["Followers"] / df.loc["total", "Clicks (All)"]
     stats_df[" "] = 0
     stats_df["Cost Per Follower/Increase"] = spent/ stats_df["Followers"]
-    stats_df.iloc[2:5, 1] = 0
-    stats_df.iloc[2:4, 3] = 0
+    stats_df.iloc[1:, 1] = 0
+    stats_df.iloc[[1,3,4], 3] = 0
     return stats_df.round(2)
 
 # Cell
@@ -188,9 +190,12 @@ def create_insights(event: Dict = None, context=None,) -> str:
     worksheet_name = date.strftime("%b %d %Y")
     stats_df = more_stats(df, date)
     empty = pd.Series(name="", dtype=str)
-    df = df.append([empty, empty, empty])
+    df = df.append([empty] * 4)
     write_df(df, worksheet_name)
+    stats_df = stats_df.append([empty] * 15)
     write_df(stats_df, worksheet_name, loc=f"B{len(df)}")
+    notes_df = pd.DataFrame([["", "CONSIDER:", "", "", "TO DO:"]], index=["PERFORMANCE:"], columns=[""] * 5)
+    write_df(notes_df, worksheet_name, loc=f"A{len(stats_df) + 1}")
 
     wsh = get_worksheet(worksheet_name)
     wsh.format(f"C1:G{len(df)-1}", {"textFormat": {
