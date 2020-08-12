@@ -125,7 +125,7 @@ def add_total(df: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([df.iloc[-1:], df.iloc[:-1]])
 
 # Cell
-def get_insights_df(insights: List) -> Tuple[pd.DataFrame, datetime]:
+def get_insights_df(insights: List, date: datetime) -> pd.DataFrame:
     df = pd.DataFrame(insights)
     floats = ["cpc", "cpm", "ctr", "spend"]
     df[floats] = df[floats].astype(float)
@@ -135,7 +135,6 @@ def get_insights_df(insights: List) -> Tuple[pd.DataFrame, datetime]:
     df = df.merge(pd.DataFrame(get_countries(df["ad_id"].values)))
     df.set_index(df["country"], inplace=True)
     df.sort_values("ad_name", inplace=True)
-    date = datetime.strptime(df["date_start"].values[0], "%Y-%m-%d")
 
     df["Post Reactions"] = df["actions"].apply(partial(get_action, name="post_reaction"))
     df["Post Shares"] = df["actions"].apply(partial(get_action, name="post"))
@@ -159,7 +158,7 @@ def get_insights_df(insights: List) -> Tuple[pd.DataFrame, datetime]:
                        "reach": "Reach", "impressions": "Impressions", "spend": "Amount Spent (USD)"}, inplace=True)
     df["% (Impressions)"] = df["% (Impressions)"].round(4)
     df[df.columns.difference(["% (Impressions)"])] = df[df.columns.difference(["% (Impressions)"])].round(2)
-    return df[COLUMNS], date
+    return df[COLUMNS]
 
 # Cell
 def more_stats(df: pd.DataFrame, date: datetime) -> pd.DataFrame:
@@ -186,8 +185,12 @@ def more_stats(df: pd.DataFrame, date: datetime) -> pd.DataFrame:
 # Cell
 def create_insights(event: Dict = None, context=None,) -> str:
     insights = get_insights()
-    df, date = get_insights_df(insights)
+    date = datetime.strptime(insights[0]["date_stop"], "%Y-%m-%d")
     worksheet_name = date.strftime("%b %d %Y")
+    if (get_followers_change(date) == 0).all().item():
+        return f"Didn't find followers for '{worksheet_name}'"
+
+    df = get_insights_df(insights, date)
     stats_df = more_stats(df, date)
     empty = pd.Series(name="", dtype=str)
     df = df.append([empty] * 4)
