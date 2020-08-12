@@ -24,9 +24,9 @@ SH = gspread.service_account(filename="creds.json").open(SHEET)
 def get_df(worksheet: str) -> pd.DataFrame:
     wsh = SH.worksheet(worksheet)
     df = pd.DataFrame(wsh.get_all_records()).replace("", 0)
-    if "countries" in df:
-        df.set_index(df["countries"], inplace=True)
-    return df.drop(columns="countries")
+    index = df.columns[0]
+    df.set_index(df[index], inplace=True)
+    return df.drop(columns=index)
 
 # Cell
 def get_worksheet(name: str) -> Worksheet:
