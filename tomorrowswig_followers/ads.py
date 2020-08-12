@@ -187,9 +187,6 @@ def create_insights(event: Dict = None, context=None,) -> str:
     insights = get_insights()
     date = datetime.strptime(insights[0]["date_stop"], "%Y-%m-%d")
     worksheet_name = date.strftime("%b %d %Y")
-    if (get_followers_change(date) == 0).all().item():
-        return f"Didn't find followers for '{worksheet_name}'"
-
     df = get_insights_df(insights, date)
     stats_df = more_stats(df, date)
     empty = pd.Series(name="", dtype=str)
@@ -198,10 +195,10 @@ def create_insights(event: Dict = None, context=None,) -> str:
     stats_df = stats_df.append([empty] * 15)
     write_df(stats_df, worksheet_name, loc=f"B{len(df)}")
     notes_df = pd.DataFrame([["", "CONSIDER:", "", "", "TO DO:"]], index=["PERFORMANCE:"], columns=[""] * 5)
-    write_df(notes_df, worksheet_name, loc=f"A{len(stats_df) + 1}")
+    write_df(notes_df, worksheet_name, loc=f"A{len(stats_df) + len(df) - 14}")
 
     wsh = get_worksheet(worksheet_name)
-    wsh.format(f"C1:G{len(df)-1}", {"textFormat": {
+    wsh.format(f"C1:F{len(df)-1}", {"textFormat": {
         "foregroundColor": {
             "red": 0.45,
             "green": 0.0,
