@@ -5,7 +5,6 @@ __all__ = ['AD_ACC_ID', 'account', 'COLUMNS', 'get_insights', 'get_action', 'add
 
 # Cell
 from .core import *
-from .followers import get_new_followers
 
 # Cell
 import os

@@ -13,6 +13,7 @@ import numpy as np
 from pyfacebook import IgProApi
 from pyfacebook.error import *
 from .core import *
+from .ads import *
 
 # Cell
 def get_followers() -> Tuple[str, Dict[str, int]]:
@@ -55,7 +56,7 @@ def get_updated_followers(
     new_followers.name = f"{date} {str(datetime.utcnow()).split('.')[0]}"
     last_entry = df.iloc[:, 0]
     if np.array_equal(last_entry[last_entry != 0].values, new_followers.sort_index().values):
-        return
+        return pd.DataFrame()
     else:
         df = pd.concat([df, new_followers], axis=1)
         df = df[[df.columns[-1]] + df.columns[:-1].tolist()]
@@ -113,6 +114,9 @@ def more_stats(df: pd.DataFrame, followers_change: pd.DataFrame) -> pd.DataFrame
 def update_insights(history_df: pd.DataFrame, date:str):
     followers_change = get_followers_change(history_df)
     df = get_df(date)
+    if df.empty:
+        create_insights()
+        df = get_df(date)
     if "PERFORMANCE:" in df.index:
         cut_off = df.reset_index().index[df["Ad Name"] == "Ads Followers Change"].item()
         df = df[:cut_off - 3]
@@ -142,9 +146,9 @@ def save_followers() -> Tuple[pd.DataFrame, str]:
     df = get_df("History")
     end_time, followers = get_followers()
     df = get_updated_followers(df, followers, end_time)
-    if not df:
+    if df.empty:
         return end_time, "No followers change"
-    date = history_df.columns[0].split("  ")[0]
+    date = df.columns[0].split("  ")[0]
     update_insights(df, date)
     write_df(df, "History")
     return date, f"Updated followers and insights for '{date}'"

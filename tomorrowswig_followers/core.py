@@ -22,11 +22,14 @@ SH = gspread.service_account(filename="creds.json").open(SHEET)
 
 # Cell
 def get_df(worksheet: str) -> pd.DataFrame:
-    wsh = SH.worksheet(worksheet)
-    df = pd.DataFrame(wsh.get_all_records()).replace("", 0)
-    index = df.columns[0]
-    df.set_index(df[index], inplace=True)
-    return df.drop(columns=index)
+    try:
+        wsh = SH.worksheet(worksheet)
+        df = pd.DataFrame(wsh.get_all_records()).replace("", 0)
+        index = df.columns[0]
+        df.set_index(df[index], inplace=True)
+        return df.drop(columns=index)
+    except WorksheetNotFound as e:
+        return pd.DataFrame()
 
 # Cell
 def get_worksheet(name: str) -> Worksheet:
