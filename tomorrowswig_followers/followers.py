@@ -114,26 +114,17 @@ def more_stats(df: pd.DataFrame, followers_change: pd.DataFrame) -> pd.DataFrame
 def update_insights(history_df: pd.DataFrame, date:str):
     followers_change = get_followers_change(history_df)
     df = get_df(date)
-    if df.empty:
-        create_insights()
-        df = get_df(date)
     if "PERFORMANCE:" in df.index:
-        cut_off = df.reset_index().index[df["Ad Name"] == "Ads Followers Change"].item()
-        df = df[:cut_off - 3]
-    worksheet_name = date
-    add_followers(df, followers_change)
+        df = df.iloc[:df.index.get_loc("PERFORMANCE:") - 9, :]
 
+    add_followers(df, followers_change)
     stats_df = more_stats(df, followers_change)
+
     empty = pd.Series(name="", dtype=str)
     df = df.append([empty] * 4)
-    write_df(df, worksheet_name)
-    stats_df = stats_df.append([empty] * 15)
-    write_df(stats_df, worksheet_name, loc=f"B{len(df)}")
-    notes_df = pd.DataFrame([["", "CONSIDER:", "", "", "TO DO:"]], index=["PERFORMANCE:"], columns=[""] * 5)
-    write_df(notes_df, worksheet_name, loc=f"A{len(stats_df) + len(df) - 14}")
-
-    wsh = get_worksheet(worksheet_name)
-    unf_cell = wsh.find("Unfollowers")
+    write_df(df, date)
+    write_df(stats_df, date, loc=f"B{len(df)}")
+    wsh = get_worksheet(date)
     wsh.format(f"C{wsh.find('Unfollowers').row}", {"textFormat": {
         "foregroundColor": {
             "red": 0.0,
@@ -142,16 +133,16 @@ def update_insights(history_df: pd.DataFrame, date:str):
         }}},)
 
 # Cell
-def save_followers() -> Tuple[pd.DataFrame, str]:
+def save_followers() -> str:
     df = get_df("History")
     end_time, followers = get_followers()
     df = get_updated_followers(df, followers, end_time)
     if df.empty:
-        return end_time, "No followers change"
+        return f"No followers change, end_time '{end_time}'"
     date = df.columns[0].split("  ")[0]
     update_insights(df, date)
     write_df(df, "History")
-    return date, f"Updated followers and insights for '{date}'"
+    return f"Wrote followers and insights for '{date}'"
 
 # Cell
 def make_change(df: pd.DataFrame) -> pd.DataFrame:
@@ -172,6 +163,6 @@ def save_change():
 # Cell
 def update(event: Dict = None, context=None,):
     get_followers()
-    date, message = save_followers()
+    message = save_followers()
     save_change()
     return message

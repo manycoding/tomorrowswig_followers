@@ -10,7 +10,7 @@ from .core import *
 import os
 from typing import *
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
 
 import pandas as pd
@@ -32,7 +32,8 @@ COLUMNS = ["Ad Name", "Ads Followers Change", "% (Clicks)", "% (Impressions)", "
            "Video Average Play Time", "Video Plays at 50%", "Video Plays at 75%", "Video Plays at 95%"]
 
 # Cell
-get_insights = partial(account.get_insights, fields=[
+def get_insights(date: str) -> Dict:
+    return account.get_insights(fields=[
         "ad_id",
         "ad_name",
         "clicks",
@@ -49,8 +50,9 @@ get_insights = partial(account.get_insights, fields=[
         "video_p75_watched_actions",
         "video_p95_watched_actions",
     ], params={
-        'level': "ad",
-        'date_preset': "yesterday",
+        "level": "ad",
+        "time_range": {"since": date,
+                       "until": date},
     })
 
 # Cell
@@ -96,7 +98,7 @@ def add_total(df: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([df.iloc[-1:], df.iloc[:-1]])
 
 # Cell
-def get_insights_df(insights: List, date: datetime) -> pd.DataFrame:
+def get_insights_df(insights: List) -> pd.DataFrame:
     df = pd.DataFrame(insights)
     floats = ["cpc", "cpm", "ctr", "spend"]
     df[floats] = df[floats].astype(float)
@@ -133,15 +135,21 @@ def get_insights_df(insights: List, date: datetime) -> pd.DataFrame:
 
 # Cell
 def create_insights(event: Dict = None, context=None,) -> str:
-    insights = get_insights()
-    date = datetime.strptime(insights[0]["date_stop"], "%Y-%m-%d")
-    worksheet_name = date.strftime("%b %d %Y")
-    df = get_insights_df(insights, date)
+    yesterday = datetime.today() - timedelta(days=1)
+    insights = get_insights(yesterday.strftime("%Y-%m-%d"))
+    df = get_insights_df(insights)
+    df_size = len(df)
+
     empty = pd.Series(name="", dtype=str)
-    df = df.append([empty] * 4)
+    df = df.append([empty] * 25)
+
+    worksheet_name = yesterday.strftime("%b %d %Y")
     write_df(df, worksheet_name)
+    notes_df = pd.DataFrame([["", "CONSIDER:", "", "", "TO DO:"]], index=["PERFORMANCE:"], columns=[""] * 5)
+    write_df(notes_df, worksheet_name, loc=f"A{df_size+10}")
+
     wsh = get_worksheet(worksheet_name)
-    wsh.format(f"C1:F{len(df)-1}", {"textFormat": {
+    wsh.format(f"C1:F{df_size+1}", {"textFormat": {
         "foregroundColor": {
             "red": 0.45,
             "green": 0.0,
