@@ -10,11 +10,11 @@ jobs:
           python-version: "3.6"
           architecture: "x64"
       - name: create secrets
-        env:
-          DEV_ENV_FILE: ${{secrets.CREDS_JSON}}
         shell: bash
+        env:
+          CREDS_JSON: ${{secrets.CREDS_JSON}}
         run: |
-          echo '"$DEV_ENV_FILE" > creds.json'
+          'echo "$CREDS_JSON" > creds.json'
           cat creds.json
       - name: Install the library
         run: |
