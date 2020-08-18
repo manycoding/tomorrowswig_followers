@@ -9,6 +9,13 @@ jobs:
         with:
           python-version: "3.6"
           architecture: "x64"
+      - name: create secrets
+        env:
+          DEV_ENV_FILE: ${{secrets.CREDS_JSON}}
+        shell: bash
+        run: |
+          echo '"$DEV_ENV_FILE" > creds.json'
+          cat creds.json
       - name: Install the library
         run: |
           pip install nbdev jupyter
@@ -28,15 +35,6 @@ jobs:
       - name: Check if there is no diff library/notebooks
         run: |
           if [ -n "$(nbdev_diff_nbs)" ]; then echo -e "!!! Detected difference between the notebooks and the library"; false; fi
-
-      - name: print secrets
-        env:
-          DEV_ENV_FILE: ${{secrets.CREDS_JSON}}
-        shell: bash
-        run: |
-          echo '"$DEV_ENV_FILE" >> creds.json'
-          cat creds.json
-
       - name: Run tests
         run: |
           nbdev_test_nbs
