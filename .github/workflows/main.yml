@@ -17,8 +17,10 @@ jobs:
         shell: bash
         env:
           CREDS_JSON: ${{secrets.CREDS_JSON}}
+          FACEBOOK_CREDS_YML: ${{secrets.FACEBOOK_CREDS_YML}}
         run: |
           echo "$CREDS_JSON" > creds.json
+          echo "$FACEBOOK_CREDS_YML" > facebook_creds.yml
       - name: Read all notebooks
         run: |
           nbdev_read_nbs
