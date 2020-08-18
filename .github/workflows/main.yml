@@ -9,7 +9,7 @@ jobs:
         env:
           CREDS_JSON: ${{secrets.CREDS_JSON}}
         run: |
-          'echo "$CREDS_JSON" > creds.json'
+          echo "$CREDS_JSON" > creds.json
           cat creds.json
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
