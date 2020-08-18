@@ -17,8 +17,6 @@ TOKEN = os.environ.get("TOKEN")
 USER_ID = os.environ.get("USER_ID")
 SHEET = os.environ.get("SHEET", "Followers API")
 SH = gspread.service_account(filename="creds.json").open(SHEET)
-# SH = gspread.service_account(filename=path.parent/"careful-form-283418-d1afb9670368.json").open("Test of Followers API)
-
 
 # Cell
 def get_df(worksheet: str) -> pd.DataFrame:
