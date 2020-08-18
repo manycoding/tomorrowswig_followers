@@ -4,13 +4,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: create secrets
-        shell: bash
-        env:
-          CREDS_JSON: ${{secrets.CREDS_JSON}}
-        run: |
-          echo "$CREDS_JSON" > creds.json
-          cat creds.json
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
@@ -20,6 +13,13 @@ jobs:
         run: |
           pip install nbdev jupyter
           pip install -e .
+      - name: Create secrets
+        shell: bash
+        env:
+          CREDS_JSON: ${{secrets.CREDS_JSON}}
+        run: |
+          echo "$CREDS_JSON" > creds.json
+          pwd
       - name: Read all notebooks
         run: |
           nbdev_read_nbs
@@ -37,4 +37,5 @@ jobs:
           if [ -n "$(nbdev_diff_nbs)" ]; then echo -e "!!! Detected difference between the notebooks and the library"; false; fi
       - name: Run tests
         run: |
+          pwd
           nbdev_test_nbs
