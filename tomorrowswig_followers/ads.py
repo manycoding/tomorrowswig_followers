@@ -137,6 +137,8 @@ def get_insights_df(insights: List) -> pd.DataFrame:
 def create_insights(event: Dict = None, context=None,) -> str:
     yesterday = datetime.today() - timedelta(days=1)
     insights = get_insights(yesterday.strftime("%Y-%m-%d"))
+    if not insights:
+        return f"No insights found for {yesterday.strftime('%Y-%m-%d')}"
     df = get_insights_df(insights)
     df_size = len(df)
 

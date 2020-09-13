@@ -114,6 +114,8 @@ def more_stats(df: pd.DataFrame, followers_change: pd.DataFrame) -> pd.DataFrame
 def update_insights(history_df: pd.DataFrame, date:str):
     followers_change = get_followers_change(history_df)
     df = get_df(date)
+    if df.empty:
+        return f"Nothing to update for {date}"
     if "PERFORMANCE:" in df.index:
         df = df.iloc[:df.index.get_loc("PERFORMANCE:") - 9, :]
 
@@ -140,8 +142,8 @@ def save_followers() -> str:
     if df.empty:
         return f"No followers change, end_time '{end_time}'"
     date = df.columns[0].split("  ")[0]
-    update_insights(df, date)
     write_df(df, "History")
+    update_insights(df, date)
     return f"Wrote followers and insights for '{date}'"
 
 # Cell
