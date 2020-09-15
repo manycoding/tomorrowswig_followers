@@ -39,7 +39,9 @@ def get_worksheet(name: str) -> Worksheet:
 
 # Cell
 def write_df(df: pd.DataFrame, worksheet: str, loc: str = "A1", columns=True):
+    """Write a dataframe to a sheet without changing it"""
     worksheet = get_worksheet(worksheet)
+    df = df.copy()
     df.insert(0, df.index.name, df.index)
     df.replace([0, np.inf, np.nan], "", inplace=True)
     values = [df.columns.to_list()] + df.values.tolist() if columns else df.values.tolist()

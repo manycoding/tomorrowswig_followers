@@ -61,7 +61,7 @@ def get_followers_change(history_df: pd.DataFrame) -> pd.DataFrame:
     return new_followers
 
 # Cell
-def get_ads_status(df: pd.DataFrame):
+def get_ads_status(date: str):
     if get_df(date).empty:
         return "OFF"
     return "ON"
