@@ -38,8 +38,9 @@ def get_worksheet(name: str) -> Worksheet:
         return SH.add_worksheet(name, 1, 1, 4)
 
 # Cell
-def write_df(df: pd.DataFrame, worksheet: str, loc: str = "A1"):
+def write_df(df: pd.DataFrame, worksheet: str, loc: str = "A1", columns=True):
     worksheet = get_worksheet(worksheet)
     df.insert(0, df.index.name, df.index)
     df.replace([0, np.inf, np.nan], "", inplace=True)
-    worksheet.update(loc, [df.columns.to_list()] + df.values.tolist(), raw=False)
+    values = [df.columns.to_list()] + df.values.tolist() if columns else df.values.tolist()
+    worksheet.update(loc, values, raw=False)
