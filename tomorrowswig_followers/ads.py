@@ -90,10 +90,11 @@ def get_delivery(ids: List[str]) -> List[Dict]:
     for id in ids:
         adset = AdSet(id[0]).api_get(fields=["learning_stage_info", "status"])
         delivery = adset.get("learning_stage_info")
+        status = adset.get("status")
         if delivery:
-            delivery = delivery.get("status")
+            delivery = status if delivery.get("status") == "SUCCESS" else delivery.get("status")
         else:
-            delivery = adset.get("status")
+            delivery = status
         deliveries.append({"ad_id": id[1], "adset_id": id[0], "Delivery Type": delivery})
     return deliveries
 
@@ -109,7 +110,7 @@ def get_countries(ids: List[str]) -> List[Dict]:
 # Cell
 def add_total(df: pd.DataFrame) -> pd.DataFrame:
     to_mean = ["cpc", "cpm", "ctr", "CPC (Cost per Link Click)", "Video Average Play Time"]
-    empty = ["Ads Followers Change", "% (Clicks)", "% (Impressions)", "Cost Per Follow", "ad_name"]
+    empty = ["Ads Followers Change", "% (Clicks)", "% (Impressions)", "Cost Per Follow", "ad_name", "Delivery Type"]
     to_sum = df.columns.difference(to_mean + empty)
     total = pd.Series(name="total", index=df.columns, dtype=float)
     total[to_mean] = df[to_mean].apply(np.mean)
