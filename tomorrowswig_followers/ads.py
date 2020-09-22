@@ -175,7 +175,7 @@ def create_insights(event: Dict = None, context=None,) -> str:
     df = df.append([empty] * 25)
 
     worksheet_name = yesterday.strftime("%b %d %Y")
-    write_df(df, worksheet_name)
+    write_df(df, worksheet_name, worksheet_loc=8)
     notes_df = pd.DataFrame([["", "CONSIDER:", "", "", "TO DO:"]], index=["PERFORMANCE:"], columns=[""] * 5)
     write_df(notes_df, worksheet_name, loc=f"A{df_size+10}")
 
@@ -208,8 +208,6 @@ def get_insights_for(date: str, countries: pd.DataFrame, followers_change: pd.Da
     if not insights:
         return pd.DataFrame()
     df = get_insights_df(countries, insights).drop("total")
-    if followers_change.empty:
-        followers_change[date] = 0
     add_followers(df, followers_change)
     df["Ads Followers Change"] = followers_change
     df["Date"] = iso_date
