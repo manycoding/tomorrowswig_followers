@@ -160,7 +160,7 @@ def save_followers() -> str:
     write_df(df, "History")
     save_ads_status(df)
     followers_change = get_followers_change(df, date)
-    update_dashboard(df, date, followers_change)
+    update_dashboard(date, followers_change)
     update_insights(df, date)
     return f"Wrote followers and insights for '{date}'"
 

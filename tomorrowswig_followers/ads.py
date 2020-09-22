@@ -202,7 +202,7 @@ def add_followers(df: pd.DataFrame, new_followers: pd.DataFrame):
     df[df.columns.difference(["% (Impressions)"])] = df[df.columns.difference(["% (Impressions)"])].round(2)
 
 # Cell
-def get_insights_for(date: str, history_df: pd.DataFrame, countries: pd.DataFrame, followers_change: pd.DataFrame) -> pd.DataFrame:
+def get_insights_for(date: str, countries: pd.DataFrame, followers_change: pd.DataFrame) -> pd.DataFrame:
     iso_date = datetime.strptime(date, "%b %d %Y").strftime("%Y-%m-%d")
     insights = get_insights(iso_date)
     if not insights:
@@ -212,20 +212,14 @@ def get_insights_for(date: str, history_df: pd.DataFrame, countries: pd.DataFram
         followers_change[date] = 0
     add_followers(df, followers_change)
     df["Ads Followers Change"] = followers_change
-    df["API New Followers"] = ""
-    df = df.append(pd.Series(name="", dtype=str))
-    df.iloc[-1, -1] = get_new_followers(iso_date)[1]
-    df = df[list(df.columns[:6]) + [df.columns[-1]] + list(df.columns[6:-1])]
     df["Date"] = iso_date
     df.reset_index(inplace=True)
     df.set_index(df["Date"], inplace=True)
-    df.iloc[-1, 0] = "API"
-    df.iloc[-1, 1] = "API - DAILY"
     return df.drop(columns=["Date"])
 
 # Cell
-def update_dashboard(history_df: pd.DataFrame, date: str, followers_change: pd.DataFrame):
+def update_dashboard(date: str, followers_change: pd.DataFrame):
     df = get_df("Dashboard")
-    insights_df = get_insights_for(date, history_df, countries, followers_change)
+    insights_df = get_insights_for(date, countries, followers_change)
     write_df(pd.concat([insights_df, df]), "Dashboard")
     return f"Updated 'Dashboard' with {date} data"
