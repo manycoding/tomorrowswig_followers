@@ -219,7 +219,8 @@ def get_insights_for(date: str, countries: pd.DataFrame, followers_change: pd.Da
 
 # Cell
 def update_dashboard(date: str, followers_change: pd.DataFrame):
-    df = get_df("Dashboard")
+    sheet = "Dashboard - Ad Data"
+    df = get_df(sheet)
     insights_df = get_insights_for(date, countries, followers_change)
-    write_df(pd.concat([insights_df, df]), "Dashboard")
-    return f"Updated 'Dashboard' with {date} data"
+    write_df(pd.concat([insights_df, df]), sheet)
+    return f"Updated {sheet} with {date} data"
