@@ -206,7 +206,6 @@ def save_change():
 
 # Cell
 def update(event: Dict = None, context=None,):
-    get_followers()
     message = save_followers()
     save_change()
     return message
