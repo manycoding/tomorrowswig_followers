@@ -4,4 +4,4 @@ This is an ETL system fully implemented in Jupyter Notebooks in Colab with AWS L
 
 ## Readme?
 
-Notebooks contain code and documentation, please refer to them.
+Readme lives in `index.ipynb` and notebooks, please refer to them.
