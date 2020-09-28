@@ -98,6 +98,7 @@ def get_delivery(ids: List[str]) -> List[Dict]:
 
 # Cell
 def get_countries() -> pd.DataFrame:
+    """Get countries of all ads"""
     countries = []
     ads = account.get_ads(fields=["id", "targeting"])
     for ad in ads:

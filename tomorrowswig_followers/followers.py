@@ -18,6 +18,7 @@ from .ads import *
 
 # Cell
 def get_followers() -> Tuple[str, Dict[str, int]]:
+    """Get current followers by top country"""
     api = IgProApi(
         app_id=APP_ID, app_secret=APP_SECRET, long_term_token=TOKEN, version="5.0"
     )
@@ -34,6 +35,7 @@ def get_followers() -> Tuple[str, Dict[str, int]]:
 
 # Cell
 def get_new_followers(date: str) -> Tuple[str, Dict[str, int]]:
+    """Get total new followers for a certain date."""
     year, month, d = [int(i) for i in date.split("-")]
     api = IgProApi(
         app_id=APP_ID, app_secret=APP_SECRET, long_term_token=TOKEN, version="5.0"
@@ -59,6 +61,7 @@ def get_dif(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_followers_change(history_df: pd.DataFrame, date: str) -> pd.DataFrame:
+    """Get country followers change from the previous entry on a given date"""
     new_followers = get_dif(history_df)
     mask = history_df.columns.str.startswith(date)
     new_followers = new_followers.iloc[:, mask].iloc[:, :1].replace(0, np.nan)
@@ -69,6 +72,7 @@ def get_followers_change(history_df: pd.DataFrame, date: str) -> pd.DataFrame:
 
 # Cell
 def get_ads_status(date: str):
+    """Get ads status - no insights sheets, no ads on."""
     if get_df(date).empty:
         return "OFF"
     return "ON"
@@ -88,6 +92,7 @@ def save_ads_status(history_df: pd.DataFrame):
 def get_updated_followers(
     df: pd.DataFrame, data: Dict[str, int], end_time: str
 ) -> pd.DataFrame:
+    """Update followers df with new data, if any"""
     new_followers = pd.Series(data)
     date = (datetime.strptime(end_time, "%Y-%m-%d") - timedelta(days=1)).strftime(f"%b %d %Y{' '*16}")
     new_followers.name = f"{date} {str(datetime.utcnow()).split('.')[0]}"
@@ -126,6 +131,7 @@ def more_stats(df: pd.DataFrame, followers_change: pd.DataFrame, date: str) -> p
 
 # Cell
 def update_insights(history_df: pd.DataFrame, date: str):
+    """Update insights sheet with followers data"""
     followers_change = get_followers_change(history_df, date)
     df = get_df(date)
     if df.empty:
@@ -162,6 +168,7 @@ def update_dashboard_followers(history_df: pd.DataFrame):
 
 # Cell
 def save_dashboard_country_followers(history_df: pd.DataFrame):
+    """Write Dashboard - Followers By Country"""
     df = pd.DataFrame(history_df.T.stack(), columns=["Followers"])
     df.index.rename(["Date", "Country"], inplace=True)
     df.reset_index(inplace=True)
@@ -171,6 +178,7 @@ def save_dashboard_country_followers(history_df: pd.DataFrame):
 
 # Cell
 def save_followers() -> str:
+    """Update all sheets with new followers data"""
     df = get_df("History")
     end_time, followers = get_followers()
     df = get_updated_followers(df, followers, end_time)
@@ -188,6 +196,7 @@ def save_followers() -> str:
 
 # Cell
 def make_change(df: pd.DataFrame) -> pd.DataFrame:
+    """Create a followers difference dataframe"""
     change_df = df.diff(axis=1, periods=-1)
     change_df = change_df.fillna(0).astype(int)
     zeros_mask  = (change_df != 0).any(axis=0)
