@@ -16,6 +16,8 @@
                 "expression": "cron(5 7 * * ? *)"
             }
         ],
-        "keep_warm": false
+        "keep_warm": false,
+        "memory_size": 1024,
+        "timeout_seconds": 60
     }
 }
